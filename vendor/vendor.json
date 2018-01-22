@@ -706,10 +706,10 @@
 			"revisionTime": "2016-08-03T19:07:31Z"
 		},
 		{
-			"checksumSHA1": "aXdvlf99YZ2uSfSK9udUunhjcVU=",
+			"checksumSHA1": "OcrpoLHqpQkHTVdHVpD7VZCRQMw=",
 			"path": "github.com/mavogel/go-dockerclient",
-			"revision": "d2634af0202314b51c63ba225dde787e363a3af9",
-			"revisionTime": "2018-01-22T13:14:14Z"
+			"revision": "ed7586b4d5f8c9b0a2ab1773caa29f6862db6729",
+			"revisionTime": "2018-01-22T14:06:53Z"
 		},
 		{
 			"checksumSHA1": "guxbLo8KHHBeM0rzou4OTzzpDNs=",
