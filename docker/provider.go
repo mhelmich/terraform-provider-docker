@@ -220,15 +220,6 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		}
 	}
 
-	// forwardConfig := &dc.ForwardConfig{}
-	// if v, ok := d.GetOk("forward_config"); ok {
-	// 	forwardConfig, err = providerSetForwardConfig(v.([]interface{}))
-
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("Error parsing forward config: %s", err)
-	// 	}
-	// }
-
 	providerConfig := ProviderConfig{
 		DockerClient: client,
 		AuthConfigs:  authConfigs,
