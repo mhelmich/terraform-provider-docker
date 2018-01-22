@@ -58,13 +58,13 @@ func (c *DockerConfig) NewClient() (*dc.Client, error) {
 		return dc.NewTLSClient(c.Host, cert, key, ca)
 	}
 
-	// if c.ForwardConfig != nil { TODO
-	// 	forwardConfig, err := parseForwardConfig(c.ForwardConfig)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("Invalid forward config: %s", err)
-	// 	}
-	// 	return dc.NewClientWithForward(forwardConfig)
-	// }
+	if c.ForwardConfig != nil {
+		forwardConfig, err := parseForwardConfig(c.ForwardConfig)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid forward config: %s", err)
+		}
+		return dc.NewClientWithForward(c.Host, forwardConfig)
+	}
 
 	// If there is no cert information, then just return the direct client
 	return dc.NewClient(c.Host)
