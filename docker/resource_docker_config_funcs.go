@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 
 	"github.com/docker/docker/api/types/swarm"
-	dc "github.com/fsouza/go-dockerclient"
 	"github.com/hashicorp/terraform/helper/schema"
+	dc "github.com/mavogel/go-dockerclient"
 )
 
 func resourceDockerConfigCreate(d *schema.ResourceData, meta interface{}) error {

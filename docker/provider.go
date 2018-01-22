@@ -6,9 +6,9 @@ import (
 	"os/user"
 	"strings"
 
-	dc "github.com/fsouza/go-dockerclient"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+	dc "github.com/mavogel/go-dockerclient"
 )
 
 // Provider creates the Docker provider

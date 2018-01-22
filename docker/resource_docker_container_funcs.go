@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	dc "github.com/fsouza/go-dockerclient"
 	"github.com/hashicorp/terraform/helper/schema"
+	dc "github.com/mavogel/go-dockerclient"
 )
 
 var (

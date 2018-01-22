@@ -12,8 +12,8 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/swarm"
-	dc "github.com/fsouza/go-dockerclient"
 	"github.com/hashicorp/terraform/helper/schema"
+	dc "github.com/mavogel/go-dockerclient"
 )
 
 func resourceDockerServiceExists(d *schema.ResourceData, meta interface{}) (bool, error) {

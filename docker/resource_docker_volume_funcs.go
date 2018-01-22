@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	dc "github.com/fsouza/go-dockerclient"
 	"github.com/hashicorp/terraform/helper/schema"
+	dc "github.com/mavogel/go-dockerclient"
 )
 
 func resourceDockerVolumeCreate(d *schema.ResourceData, meta interface{}) error {

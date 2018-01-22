@@ -3,8 +3,8 @@ package docker
 import (
 	"fmt"
 
-	dc "github.com/fsouza/go-dockerclient"
 	"github.com/hashicorp/terraform/helper/schema"
+	dc "github.com/mavogel/go-dockerclient"
 )
 
 func resourceDockerNetworkCreate(d *schema.ResourceData, meta interface{}) error {
@@ -26,7 +26,7 @@ func resourceDockerNetworkCreate(d *schema.ResourceData, meta interface{}) error
 		createOpts.Internal = v.(bool)
 	}
 
-	ipamOpts := dc.IPAMOptions{}
+	ipamOpts := &dc.IPAMOptions{}
 	ipamOptsSet := false
 	if v, ok := d.GetOk("ipam_driver"); ok {
 		ipamOpts.Driver = v.(string)

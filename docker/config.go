@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	dc "github.com/fsouza/go-dockerclient"
+	dc "github.com/mavogel/go-dockerclient"
 )
 
 // DockerConfig is the structure that stores the configuration to talk to a
