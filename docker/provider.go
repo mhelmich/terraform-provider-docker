@@ -94,69 +94,49 @@ func Provider() terraform.ResourceProvider {
 				Description: "Configuration to forward the docker daemon from a remote to a local address",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"bastion_host_config": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
+						"bastion_host": &schema.Schema{
+							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Configuration for the bastion aka jump host",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"host": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The host address of the bastion host",
-									},
-									"user": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The user to login via ssh on the bastion host",
-									},
-									"password": &schema.Schema{
-										Type:          schema.TypeString,
-										Optional:      true,
-										ConflictsWith: []string{"forward_config.bastion_host_config.private_key_file"},
-										Description:   "The password of the user to login via ssh on the bastion host",
-									},
-									"private_key_file": &schema.Schema{
-										Type:          schema.TypeString,
-										Optional:      true,
-										ConflictsWith: []string{"forward_config.bastion_host_config.password"},
-										Description:   "The private key file associated with the user to login via ssh on the bastion host",
-									},
-								},
-							},
+							Description: "The host address of the bastion host",
 						},
-						"end_host_config": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
+						"bastion_host_user": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The user to login via ssh on the bastion host",
+						},
+						"bastion_host_password": &schema.Schema{
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"forward_config.bastion_host_private_key_file"},
+							Description:   "The password of the user to login via ssh on the bastion host",
+						},
+						"bastion_host_private_key_file": &schema.Schema{
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"forward_config.bastion_host_password"},
+							Description:   "The private key file associated with the user to login via ssh on the bastion host",
+						},
+						"end_host": &schema.Schema{
+							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Configuration for the end host where the docker daemon is running",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"host": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The host address of the end host",
-									},
-									"user": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The user to login via ssh on the end host",
-									},
-									"password": &schema.Schema{
-										Type:          schema.TypeString,
-										Optional:      true,
-										ConflictsWith: []string{"forward_config.end_host_config.private_key_file"},
-										Description:   "The password of the user to login via ssh on the end host",
-									},
-									"private_key_file": &schema.Schema{
-										Type:          schema.TypeString,
-										Optional:      true,
-										ConflictsWith: []string{"forward_config.end_host_config.password"},
-										Description:   "The private key file associated with the user to login via ssh on the end host",
-									},
-								},
-							},
+							Description: "The host address of the end host",
+						},
+						"end_host_user": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The user to login via ssh on the end host",
+						},
+						"end_host_password": &schema.Schema{
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"forward_config.end_host_private_key_file"},
+							Description:   "The password of the user to login via ssh on the end host",
+						},
+						"end_host_private_key_file": &schema.Schema{
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"forward_config.end_host_password"},
+							Description:   "The private key file associated with the user to login via ssh on the end host",
 						},
 						"local_address": &schema.Schema{
 							Type:        schema.TypeString,
@@ -198,7 +178,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Cert:          d.Get("cert_material").(string),
 		Key:           d.Get("key_material").(string),
 		CertPath:      d.Get("cert_path").(string),
-		ForwardConfig: d.Get("forward_config").([]interface{}),
+		ForwardConfig: nil,
+	}
+	if forwardConfig, ok := d.GetOk("forward_config"); ok {
+		config.ForwardConfig = forwardConfig.([]interface{})
 	}
 
 	client, err := config.NewClient()

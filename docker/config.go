@@ -94,44 +94,38 @@ func normalizeRegistryAddress(address string) string {
 func parseForwardConfig(forwardConfigList []interface{}) (*dc.ForwardConfig, error) {
 	forwardConfig := &dc.ForwardConfig{}
 
-	if len(forwardConfigList) > 0 {
+	if forwardConfigList != nil && len(forwardConfigList) > 0 {
 		fc := forwardConfigList[0].(map[string]interface{})
-		jumpHostConfigs := make([]*dc.ForwardSSHConfig, 0)
-		forwardConfig.JumpHostConfigs = jumpHostConfigs
 
-		if v, ok := fc["bastion_host_config"]; ok {
+		if v, ok := fc["bastion_host"]; ok {
+			jumpHostConfigs := make([]*dc.ForwardSSHConfig, 0)
 			bastionHostConfig := &dc.ForwardSSHConfig{}
-			bastionHostConfigRaw := v.(map[string]interface{})
-			if v, ok := bastionHostConfigRaw["host"]; ok {
-				bastionHostConfig.Address = v.(string)
-			}
-			if v, ok := bastionHostConfigRaw["user"]; ok {
+			bastionHostConfig.Address = v.(string)
+			if v, ok := fc["bastion_host_user"]; ok {
 				bastionHostConfig.User = v.(string)
 			}
-			if v, ok := bastionHostConfigRaw["password"]; ok {
+			if v, ok := fc["bastion_host_password"]; ok {
 				bastionHostConfig.Password = v.(string)
 			}
-			if v, ok := bastionHostConfigRaw["private_key_file"]; ok {
+			if v, ok := fc["bastion_host_private_key_file"]; ok {
 				bastionHostConfig.PrivateKeyFile = v.(string)
 			}
 			jumpHostConfigs = append(jumpHostConfigs, bastionHostConfig)
+			forwardConfig.JumpHostConfigs = jumpHostConfigs
 		}
 
-		if v, ok := fc["end_host_config"]; ok {
-			forwardConfig.EndHostConfig = &dc.ForwardSSHConfig{}
-			endHostConfigRaw := v.(map[string]interface{})
-			if v, ok := endHostConfigRaw["host"]; ok {
-				forwardConfig.EndHostConfig.Address = v.(string)
-			}
-			if v, ok := endHostConfigRaw["user"]; ok {
-				forwardConfig.EndHostConfig.User = v.(string)
-			}
-			if v, ok := endHostConfigRaw["password"]; ok {
-				forwardConfig.EndHostConfig.Password = v.(string)
-			}
-			if v, ok := endHostConfigRaw["private_key_file"]; ok {
-				forwardConfig.EndHostConfig.PrivateKeyFile = v.(string)
-			}
+		forwardConfig.EndHostConfig = &dc.ForwardSSHConfig{}
+		if v, ok := fc["end_host"]; ok {
+			forwardConfig.EndHostConfig.Address = v.(string)
+		}
+		if v, ok := fc["end_host_user"]; ok {
+			forwardConfig.EndHostConfig.User = v.(string)
+		}
+		if v, ok := fc["end_host_password"]; ok {
+			forwardConfig.EndHostConfig.Password = v.(string)
+		}
+		if v, ok := fc["end_host_private_key_file"]; ok {
+			forwardConfig.EndHostConfig.PrivateKeyFile = v.(string)
 		}
 
 		if v, ok := fc["local_address"]; ok {
@@ -141,7 +135,6 @@ func parseForwardConfig(forwardConfigList []interface{}) (*dc.ForwardConfig, err
 		if v, ok := fc["remote_address"]; ok {
 			forwardConfig.RemoteAddress = v.(string)
 		}
-
 	}
 
 	return forwardConfig, nil
