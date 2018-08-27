@@ -133,8 +133,8 @@ func fetchLocalImages(data *Data, client *client.Client) error {
 	return nil
 }
 
-func tagAndPushImage(data *Data, client *client.Client, authConfig *AuthConfigs, localImage string, remoteImage string) error {
-	pullOpts := parseImageOptions(remoteImage)
+func tagAndPushImage(data *Data, client *client.Client, authConfig *AuthConfigs, sourceImageName string, targetImageName string) error {
+	pullOpts := parseImageOptions(targetImageName)
 
 	// If a registry was specified in the remoteImage name, try to find auth for it
 	var auth types.AuthConfig
@@ -149,7 +149,7 @@ func tagAndPushImage(data *Data, client *client.Client, authConfig *AuthConfigs,
 		}
 	}
 
-	err := client.ImageTag(context.Background(), localImage, remoteImage)
+	err := client.ImageTag(context.Background(), sourceImageName, targetImageName)
 	if err != nil {
 		return err
 	}
@@ -159,18 +159,18 @@ func tagAndPushImage(data *Data, client *client.Client, authConfig *AuthConfigs,
 		return fmt.Errorf("error creating auth config: %s", err)
 	}
 
-	out, err := client.ImagePush(context.Background(), remoteImage, types.ImagePushOptions{
+	out, err := client.ImagePush(context.Background(), targetImageName, types.ImagePushOptions{
 		RegistryAuth: base64.URLEncoding.EncodeToString(encodedJSON),
 	})
 	if err != nil {
-		return fmt.Errorf("error pulling image %s: %s", remoteImage, err)
+		return fmt.Errorf("error pulling image %s: %s", targetImageName, err)
 	}
 	defer out.Close()
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(out)
 	s := buf.String()
-	log.Printf("[DEBUG] pushed image %v: %v", remoteImage, s)
+	log.Printf("[DEBUG] pushed image %v: %v", targetImageName, s)
 
 	return fetchLocalImages(data, client)
 }

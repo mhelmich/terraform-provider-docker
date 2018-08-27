@@ -16,12 +16,12 @@ func resourceDockerRegistryImage() *schema.Resource {
 		Delete: resourceDockerRegistryImageDelete,
 
 		Schema: map[string]*schema.Schema{
-			"local_name": &schema.Schema{
+			"source_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"remote_name": &schema.Schema{
+			"target_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -35,11 +35,11 @@ func resourceDockerRegistryImage() *schema.Resource {
 }
 
 func resourceDockerRegistryImageCreate(d *schema.ResourceData, meta interface{}) error {
-	localName := d.Get("local_name").(string)
-	remoteName := d.Get("remote_name").(string)
+	sourceName := d.Get("local_name").(string)
+	targetName := d.Get("remote_name").(string)
 	client := meta.(*ProviderConfig).DockerClient
 	authConfig := meta.(*ProviderConfig).AuthConfigs
-	return tagAndPushImage(nil, client, authConfig, localName, remoteName)
+	return tagAndPushImage(nil, client, authConfig, sourceName, targetName)
 }
 
 func resourceDockerRegistryImageRead(d *schema.ResourceData, meta interface{}) error {
