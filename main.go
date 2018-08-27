@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/hashicorp/terraform/plugin"
-	"github.com/terraform-providers/terraform-provider-docker/docker"
+	"github.com/mhelmich/terraform-provider-docker/docker"
 )
 
 func main() {
