@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -130,6 +131,48 @@ func fetchLocalImages(data *Data, client *client.Client) error {
 	}
 
 	return nil
+}
+
+func tagAndPushImage(data *Data, client *client.Client, authConfig *AuthConfigs, localImage string, remoteImage string) error {
+	pullOpts := parseImageOptions(remoteImage)
+
+	// If a registry was specified in the remoteImage name, try to find auth for it
+	var auth types.AuthConfig
+	if pullOpts.Registry != "" {
+		if tmpAC, ok := authConfig.Configs[normalizeRegistryAddress(pullOpts.Registry)]; ok {
+			auth = tmpAC
+		}
+	} else {
+		// Try to find an auth config for the public docker hub if a registry wasn't given
+		if tmpAC, ok := authConfig.Configs["https://registry.hub.docker.com"]; ok {
+			auth = tmpAC
+		}
+	}
+
+	err := client.ImageTag(context.Background(), localImage, remoteImage)
+	if err != nil {
+		return err
+	}
+
+	encodedJSON, err := json.Marshal(auth)
+	if err != nil {
+		return fmt.Errorf("error creating auth config: %s", err)
+	}
+
+	out, err := client.ImagePush(context.Background(), remoteImage, types.ImagePushOptions{
+		RegistryAuth: base64.URLEncoding.EncodeToString(encodedJSON),
+	})
+	if err != nil {
+		return fmt.Errorf("error pulling image %s: %s", remoteImage, err)
+	}
+	defer out.Close()
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(out)
+	s := buf.String()
+	log.Printf("[DEBUG] pushed image %v: %v", remoteImage, s)
+
+	return fetchLocalImages(data, client)
 }
 
 func pullImage(data *Data, client *client.Client, authConfig *AuthConfigs, image string) error {
