@@ -1,10 +1,6 @@
 package docker
 
 import (
-	"encoding/base64"
-	"encoding/json"
-
-	"github.com/docker/docker/api/types"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -35,11 +31,21 @@ func resourceDockerRegistryImage() *schema.Resource {
 }
 
 func resourceDockerRegistryImageCreate(d *schema.ResourceData, meta interface{}) error {
-	sourceName := d.Get("local_name").(string)
-	targetName := d.Get("remote_name").(string)
+	sourceName := d.Get("source_name").(string)
+	targetName := d.Get("target_name").(string)
 	client := meta.(*ProviderConfig).DockerClient
 	authConfig := meta.(*ProviderConfig).AuthConfigs
-	return tagAndPushImage(nil, client, authConfig, sourceName, targetName)
+
+	var data Data
+	err := tagAndPushImage(&data, client, authConfig, sourceName, targetName)
+	if err != nil {
+		return err
+	}
+
+	digest := data.DockerImages[targetName].ID
+	d.SetId(digest)
+	d.Set("sha256_digest", digest)
+	return nil
 }
 
 func resourceDockerRegistryImageRead(d *schema.ResourceData, meta interface{}) error {
@@ -47,21 +53,9 @@ func resourceDockerRegistryImageRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceDockerRegistryImageUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	return resourceDockerRegistryImageCreate(d, meta)
 }
 
 func resourceDockerRegistryImageDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
-}
-
-func getAuthToken(username string, password string) string {
-	authConfig := types.AuthConfig{
-		Username: username,
-		Password: password,
-	}
-	encodedJSON, err := json.Marshal(authConfig)
-	if err != nil {
-		panic(err)
-	}
-	return base64.URLEncoding.EncodeToString(encodedJSON)
 }
