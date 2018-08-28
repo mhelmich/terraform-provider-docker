@@ -42,7 +42,7 @@ func resourceDockerRegistryImageCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	digest := data.DockerImages[targetName].ID
+	digest := data.DockerImages[targetName+":latest"].ID
 	d.SetId(digest)
 	d.Set("sha256_digest", digest)
 	return nil
