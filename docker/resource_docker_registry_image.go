@@ -99,5 +99,6 @@ func resourceDockerRegistryImageUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceDockerRegistryImageDelete(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[INFO] Not supported yet")
 	return nil
 }
