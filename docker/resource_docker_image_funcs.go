@@ -74,7 +74,6 @@ func searchLocalImages(data Data, imageName string) *types.ImageSummary {
 		return apiImage
 	}
 	if apiImage, ok := data.DockerImages[imageName+":latest"]; ok {
-		imageName = imageName + ":latest"
 		return apiImage
 	}
 	return nil
