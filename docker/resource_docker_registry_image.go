@@ -1,10 +1,12 @@
 package docker
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 
+	"github.com/docker/docker/api/types"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -57,48 +59,38 @@ func resourceDockerRegistryImageCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceDockerRegistryImageRead(d *schema.ResourceData, meta interface{}) error {
-	pullOpts := parseImageOptions(d.Get("target_name").(string))
-	authConfig := meta.(*ProviderConfig).AuthConfigs
+	client := meta.(*ProviderConfig).DockerClient
 
-	// Use the official Docker Hub if a registry isn't specified
-	if pullOpts.Registry == "" {
-		pullOpts.Registry = "registry.hub.docker.com"
-	} else {
-		// Otherwise, filter the registry name out of the repo name
-		pullOpts.Repository = strings.Replace(pullOpts.Repository, pullOpts.Registry+"/", "", 1)
-	}
-
-	if pullOpts.Registry == "registry.hub.docker.com" {
-		// Docker prefixes 'library' to official images in the path; 'consul' becomes 'library/consul'
-		if !strings.Contains(pullOpts.Repository, "/") {
-			pullOpts.Repository = "library/" + pullOpts.Repository
-		}
-	}
-
-	if pullOpts.Tag == "" {
-		pullOpts.Tag = "latest"
-	}
-
-	var username string
-	var password string
-
-	if auth, ok := authConfig.Configs[normalizeRegistryAddress(pullOpts.Registry)]; ok {
-		username = auth.Username
-		password = auth.Password
-	}
-
-	digest, err := getImageDigest(pullOpts.Registry, pullOpts.Repository, pullOpts.Tag, username, password, false)
+	// TODO - only look for the image we need
+	// we don't have to list all images...
+	iss, err := client.ImageList(context.TODO(), types.ImageListOptions{
+		All: true,
+	})
 	if err != nil {
-		digest, err = getImageDigest(pullOpts.Registry, pullOpts.Repository, pullOpts.Tag, username, password, true)
-		if err != nil {
-			return fmt.Errorf("Got error when attempting to fetch image version from registry: %s", err)
+		return err
+	}
+
+	targetName := d.Get("target_name").(string)
+	if strings.Index(targetName, ":") == -1 {
+		targetName = targetName + ":latest"
+	}
+
+	var theDigestIWannaRelease string
+	for _, is := range iss {
+		for _, tag := range is.RepoTags {
+			if tag == targetName {
+				theDigestIWannaRelease = is.ID
+			}
 		}
 	}
 
-	log.Printf("[DEBUG] found image %v : digest %s", d.Get("target_name").(string), digest)
+	if theDigestIWannaRelease == "" {
+		return fmt.Errorf("Can't find docker image: %s", targetName)
+	}
 
-	d.SetId(digest)
-	d.Set("sha256_digest", digest)
+	log.Printf("[DEBUG] found image: %s %s", targetName, theDigestIWannaRelease)
+	d.SetId(theDigestIWannaRelease)
+	d.Set("sha256_digest", theDigestIWannaRelease)
 	return nil
 }
 
